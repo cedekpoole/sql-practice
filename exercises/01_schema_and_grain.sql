@@ -1,26 +1,35 @@
 -- 01_schema_and_grain.sql
--- Schema, grain, and basic row-level queries.
+-- Schema and table grain.
 
--- Schema = the structure of the database: tables, columns, data types,
--- primary keys, foreign keys, and relationships between tables.
---
+-- Schema = database structure: tables, columns, data types, keys, relationships.
 -- Grain = what one row represents.
+-- Primary key = column(s) that uniquely identify one row.
+-- Foreign key = column that points to a row in another table.
 
--- Core tables
+-- Inspect in psql
+-- \dt              -- list tables
+-- \d customers     -- describe one table
+
+-- Core Northwind tables
 -- customers: one row per customer/company. PK: customer_id
 -- orders: one row per order. PK: order_id
 -- order_details: one row per product line in an order. PK: order_id + product_id
 -- products: one row per product. PK: product_id
 
--- Quick checklist
--- 1. What does one row represent?
--- 2. Which table is already at that grain?
--- 3. Which columns do I need?
--- 4. Do I need a filter, sort, limit, or metric?
--- 5. How can I check the result?
+-- Key relationships
+-- orders.customer_id -> customers.customer_id
+-- order_details.order_id -> orders.order_id
+-- order_details.product_id -> products.product_id
+-- products.category_id -> categories.category_id
+-- products.supplier_id -> suppliers.supplier_id
 
--- Pattern: preview rows
--- LIMIT gives a sample; it does not change the table grain.
+-- Grain checklist
+-- 1. What does one source row represent?
+-- 2. What should one output row represent?
+-- 3. Which table is already closest to that output grain?
+-- 4. Will the query keep the same grain or collapse/change it?
+
+-- Pattern: preview a table without SELECT *
 SELECT
     product_id,
     product_name,
@@ -30,68 +39,19 @@ SELECT
 FROM products
 LIMIT 10;
 
--- Pattern: filter rows
--- WHERE chooses rows.
-SELECT
-    customer_id,
-    company_name,
-    country
-FROM customers
-WHERE country = 'UK';
-
--- Pattern: filter then sort
--- ORDER BY arranges the rows returned.
-SELECT
-    customer_id,
-    company_name,
-    country
-FROM customers
-WHERE country = 'UK'
-ORDER BY company_name;
-
--- Expected check for the UK customer query:
--- 7 rows, all country = 'UK', sorted by company_name.
-
--- Pattern: numeric filter
--- Numeric values do not need quotes.
-SELECT
-    product_id,
-    product_name,
-    unit_price
-FROM products
-WHERE unit_price > 50;
-
--- Expected check:
--- 7 rows, all unit_price values above 50.
-
--- Pattern: date filter
--- Date values use quotes. Match the wording to the right date column.
--- placed = order_date; needed by = required_date; shipped = shipped_date.
-SELECT
-    order_id,
-    customer_id,
-    order_date,
-    required_date,
-    shipped_date
-FROM orders
-WHERE order_date >= '1998-01-01'
-ORDER BY order_date
-LIMIT 10;
-
--- Expected check:
--- All order_date values are on or after 1998-01-01.
-
--- Useful reminders
--- SELECT chooses columns.
--- FROM chooses the table.
--- WHERE filters rows.
--- ORDER BY sorts rows.
--- LIMIT restricts how many rows are shown.
--- Text and dates use quotes. Numbers do not.
+-- Output grain examples
+-- SELECT rows from customers -> one row per customer/company.
+-- SELECT rows from orders -> one row per order.
+-- SELECT rows from order_details -> one row per product line in an order.
+-- SELECT rows from products -> one row per product.
 
 -- Common mistakes
--- SELECT * when only a few columns are needed.
--- Forgetting quotes around text values: country = 'UK'
--- Putting quotes around numbers by habit: unit_price > 50
--- Filtering on the wrong date column.
--- Thinking LIMIT means the table only has that many rows.
+-- Confusing selected columns with grain.
+-- Using SELECT * instead of choosing useful columns.
+-- Forgetting that order_details is not one row per order.
+-- Assuming an ID alone explains the record without checking the table grain.
+
+-- Memory hooks
+-- Grain = what one row means.
+-- The primary key usually reveals the grain.
+-- Start from the table that already matches the question.
