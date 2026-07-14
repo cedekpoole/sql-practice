@@ -73,6 +73,40 @@ FROM order_details;
 
 -- Check: 1354458.590441227 gross revenue before discount.
 
+-- Pattern: net revenue after discount
+-- discount is a proportion: 0.10 = 10%.
+-- Net revenue per order line = unit_price * quantity * (1 - discount).
+SELECT
+    SUM(unit_price * quantity * (1 - discount)) AS total_revenue
+FROM order_details;
+
+-- Check: 1265793.038653364 total revenue after discount.
+
+-- Pattern: revenue per group
+-- One row per product_id, showing net revenue per product.
+SELECT
+    product_id,
+    SUM(unit_price * quantity * (1 - discount)) AS net_revenue
+FROM order_details
+GROUP BY product_id
+ORDER BY net_revenue DESC
+LIMIT 10;
+
+-- Check: top product_id is 38 with 141396.7356273254 net revenue.
+
+-- Pattern: collapse line items to order grain
+-- order_details has multiple rows per order when an order has multiple products.
+-- GROUP BY order_id returns one revenue total per order.
+SELECT
+    order_id,
+    SUM(unit_price * quantity * (1 - discount)) AS net_revenue
+FROM order_details
+GROUP BY order_id
+ORDER BY net_revenue DESC
+LIMIT 10;
+
+-- Check: top order_id is 10865 with 16387.49998714775 net revenue.
+
 -- Pattern: HAVING
 -- WHERE filters rows before grouping. HAVING filters groups after grouping.
 -- Customers with more than 20 orders.
@@ -96,6 +130,9 @@ ORDER BY num_orders DESC;
 -- Confusing products.unit_price with order_details.unit_price.
 -- Using WHERE for a condition on an aggregate.
 -- Relying on a SELECT alias inside HAVING.
+-- Using aliases with spaces instead of snake_case.
+-- Using LIMIT without ORDER BY when asking for "top" results.
+-- Forgetting to group order_details by order_id when calculating order-level revenue.
 
 -- Memory hooks
 -- COUNT(*) = count rows.
