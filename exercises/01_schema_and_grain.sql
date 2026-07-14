@@ -64,15 +64,34 @@ WHERE unit_price > 50;
 -- Expected check:
 -- 7 rows, all unit_price values above 50.
 
+-- Pattern: date filter
+-- Date values use quotes. Match the wording to the right date column.
+-- placed = order_date; needed by = required_date; shipped = shipped_date.
+SELECT
+    order_id,
+    customer_id,
+    order_date,
+    required_date,
+    shipped_date
+FROM orders
+WHERE order_date >= '1998-01-01'
+ORDER BY order_date
+LIMIT 10;
+
+-- Expected check:
+-- All order_date values are on or after 1998-01-01.
+
 -- Useful reminders
 -- SELECT chooses columns.
 -- FROM chooses the table.
 -- WHERE filters rows.
 -- ORDER BY sorts rows.
 -- LIMIT restricts how many rows are shown.
+-- Text and dates use quotes. Numbers do not.
 
 -- Common mistakes
 -- SELECT * when only a few columns are needed.
 -- Forgetting quotes around text values: country = 'UK'
 -- Putting quotes around numbers by habit: unit_price > 50
+-- Filtering on the wrong date column.
 -- Thinking LIMIT means the table only has that many rows.
