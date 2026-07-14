@@ -63,6 +63,16 @@ FROM products;
 
 -- Check: avg = 28.83389609200614, min = 2.5, max = 263.5.
 
+-- Pattern: calculated metric inside SUM
+-- Source grain: order_details is one row per product line in an order.
+-- Output grain: one row for the whole table because there is no GROUP BY.
+-- Gross revenue before discount = unit_price * quantity.
+SELECT
+    SUM(unit_price * quantity) AS gross_revenue
+FROM order_details;
+
+-- Check: 1354458.590441227 gross revenue before discount.
+
 -- Pattern: HAVING
 -- WHERE filters rows before grouping. HAVING filters groups after grouping.
 -- Customers with more than 20 orders.
