@@ -52,6 +52,18 @@ ORDER BY company_name;
 -- Expected check for the UK customer query:
 -- 7 rows, all country = 'UK', sorted by company_name.
 
+-- Pattern: numeric filter
+-- Numeric values do not need quotes.
+SELECT
+    product_id,
+    product_name,
+    unit_price
+FROM products
+WHERE unit_price > 50;
+
+-- Expected check:
+-- 7 rows, all unit_price values above 50.
+
 -- Useful reminders
 -- SELECT chooses columns.
 -- FROM chooses the table.
@@ -62,4 +74,5 @@ ORDER BY company_name;
 -- Common mistakes
 -- SELECT * when only a few columns are needed.
 -- Forgetting quotes around text values: country = 'UK'
+-- Putting quotes around numbers by habit: unit_price > 50
 -- Thinking LIMIT means the table only has that many rows.
