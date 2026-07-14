@@ -107,6 +107,17 @@ LIMIT 10;
 
 -- Check: top order_id is 10865 with 16387.49998714775 net revenue.
 
+-- Pattern: group by date part
+-- One row per order year.
+SELECT
+    EXTRACT(YEAR FROM order_date) AS order_year,
+    COUNT(*) AS num_orders
+FROM orders
+GROUP BY order_year
+ORDER BY order_year;
+
+-- Check: 1996 = 152, 1997 = 408, 1998 = 270.
+
 -- Pattern: HAVING
 -- WHERE filters rows before grouping. HAVING filters groups after grouping.
 -- Customers with more than 20 orders.
