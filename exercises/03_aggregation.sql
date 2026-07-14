@@ -118,6 +118,18 @@ ORDER BY order_year;
 
 -- Check: 1996 = 152, 1997 = 408, 1998 = 270.
 
+-- Pattern: group by month
+-- DATE_TRUNC means "date truncate": round down to the start of the period.
+-- Cast to date for a cleaner display.
+SELECT
+    DATE_TRUNC('month', order_date)::date AS order_month,
+    COUNT(*) AS num_orders
+FROM orders
+GROUP BY order_month
+ORDER BY order_month;
+
+-- Check: 23 monthly rows from 1996-07-01 to 1998-05-01.
+
 -- Pattern: HAVING
 -- WHERE filters rows before grouping. HAVING filters groups after grouping.
 -- Customers with more than 20 orders.
