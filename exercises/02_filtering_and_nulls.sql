@@ -53,9 +53,54 @@ LIMIT 10;
 
 -- Check: all order_date values are on or after 1998-01-01.
 
--- Pattern: NULL filter
--- Scenario: customers without a region recorded.
--- Write and run this one during practice.
+-- Pattern: IS NULL
+-- Missing values are checked with IS NULL, not = NULL.
+SELECT
+    customer_id,
+    company_name,
+    city,
+    region,
+    country
+FROM customers
+WHERE region IS NULL;
+
+-- Pattern: IS NOT NULL
+-- Use when the value must be present.
+SELECT
+    customer_id,
+    company_name,
+    city,
+    region,
+    country
+FROM customers
+WHERE region IS NOT NULL;
+
+-- Pattern: IN
+-- Use for several exact values.
+SELECT
+    customer_id,
+    company_name,
+    country
+FROM customers
+WHERE country IN ('UK', 'Germany', 'France');
+
+-- Pattern: BETWEEN
+-- Inclusive range: BETWEEN 20 AND 50 means >= 20 and <= 50.
+SELECT
+    product_id,
+    product_name,
+    unit_price
+FROM products
+WHERE unit_price BETWEEN 20 AND 50;
+
+-- Pattern: LIKE
+-- % = any number of characters. _ = one character.
+SELECT
+    customer_id,
+    company_name,
+    country
+FROM customers
+WHERE company_name LIKE 'B%';
 
 -- Pattern: combine AND / OR with parentheses
 -- Scenario: active products that are expensive or low in stock.
@@ -84,4 +129,6 @@ WHERE discontinued = 0
 -- Forgetting quotes around text/date values.
 -- Filtering on shipped_date when the question says "placed".
 -- Missing parentheses when mixing AND and OR.
+-- Forgetting BETWEEN is inclusive.
+-- Using LIKE when exact IN values would be clearer.
 -- Thinking LIMIT means the table only has that many rows.
