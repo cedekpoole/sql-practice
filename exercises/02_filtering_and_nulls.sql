@@ -53,8 +53,9 @@ LIMIT 10;
 
 -- Check: all order_date values are on or after 1998-01-01.
 
--- Pattern: IS NULL
--- Missing values are checked with IS NULL, not = NULL.
+-- Pattern: NULL filter
+-- NULL means missing/unknown.
+-- Use IS NULL to find missing values.
 SELECT
     customer_id,
     company_name,
@@ -64,8 +65,10 @@ SELECT
 FROM customers
 WHERE region IS NULL;
 
--- Pattern: IS NOT NULL
--- Use when the value must be present.
+-- Check: every returned row should have a blank/missing region.
+
+-- Pattern: NOT NULL filter
+-- Use IS NOT NULL when the value must be present.
 SELECT
     customer_id,
     company_name,
@@ -74,6 +77,8 @@ SELECT
     country
 FROM customers
 WHERE region IS NOT NULL;
+
+-- Check: every returned row should have a recorded region.
 
 -- Pattern: IN
 -- Use for several exact values.
@@ -126,6 +131,7 @@ WHERE discontinued = 0
 
 -- Common mistakes
 -- WHERE region = NULL
+-- WHERE region != NULL
 -- Forgetting quotes around text/date values.
 -- Filtering on shipped_date when the question says "placed".
 -- Missing parentheses when mixing AND and OR.
