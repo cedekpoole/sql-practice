@@ -162,3 +162,9 @@ ORDER BY num_orders DESC;
 -- GROUP BY = choose one row per group.
 -- Aggregation changes the output grain.
 -- WHERE before groups. HAVING after groups.
+-- "by X" = GROUP BY X.
+-- "total" = SUM.
+-- "how many" = COUNT.
+-- "average" = AVG, but check the grain.
+-- "more than N after grouping" = HAVING.
+-- "top" = ORDER BY metric DESC LIMIT N.
