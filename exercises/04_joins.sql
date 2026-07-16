@@ -57,9 +57,26 @@ JOIN customers
 
 -- Check: 830 rows.
 
+-- Pattern: expand one order into its product lines
+-- Output grain: one row per product line for order 10248.
+-- Rows multiply because one order can have many order_details rows.
+SELECT
+    o.order_id,
+    od.product_id
+FROM orders AS o
+JOIN order_details AS od
+    ON o.order_id = od.order_id
+WHERE o.order_id = 10248
+ORDER BY od.product_id;
+
+-- Check: 3 rows, for product_id 11, 42 and 72.
+-- Both tables contain order_id, so qualify it with the table alias.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
 -- Relationship decides whether rows multiply.
 -- orders -> customers is many-to-one.
 -- customers -> orders is one-to-many.
+-- Clause pattern: FROM -> JOIN -> ON -> WHERE.
+-- If both tables share a column name, qualify it: o.order_id.
