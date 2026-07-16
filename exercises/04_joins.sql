@@ -28,6 +28,23 @@
 -- Check row counts before and after joins.
 -- Ask: am I adding one matching row, or many matching rows?
 
+-- Pattern: add a lookup/detail column
+-- Show orders with the customer company name.
+-- Output grain: one row per order.
+-- This should not multiply rows because each order points to at most one customer.
+SELECT
+    orders.order_id,
+    orders.order_date,
+    orders.customer_id,
+    customers.company_name
+FROM orders
+JOIN customers
+    ON orders.customer_id = customers.customer_id
+ORDER BY orders.order_id
+LIMIT 10;
+
+-- Check: first order_id is 10248 for Vins et alcools Chevalier.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
