@@ -45,7 +45,21 @@ LIMIT 10;
 
 -- Check: first order_id is 10248 for Vins et alcools Chevalier.
 
+-- Pattern: validate a many-to-one join
+-- Base table: orders = 830 rows.
+-- Joining orders to customers should stay at 830 rows because each order
+-- points to at most one customer.
+SELECT
+    COUNT(*) AS joined_order_customer_count
+FROM orders
+JOIN customers
+    ON orders.customer_id = customers.customer_id;
+
+-- Check: 830 rows.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
 -- Relationship decides whether rows multiply.
+-- orders -> customers is many-to-one.
+-- customers -> orders is one-to-many.
