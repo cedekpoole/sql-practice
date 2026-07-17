@@ -90,6 +90,21 @@ ORDER BY od.quantity DESC;
 -- Check: Queso Cabrales = 12, Singaporean Hokkien Fried Mee = 10,
 -- Mozzarella di Giovanni = 5.
 
+-- Pattern: find rows with no match (anti-join)
+-- Find customers who have never placed an order.
+-- Output grain: one row per customer with no orders.
+-- "All customers" puts customers on the left. A missing order produces NULL
+-- in the orders columns, so filter on the right-side primary key.
+SELECT
+    c.customer_id,
+    c.company_name
+FROM customers AS c
+LEFT JOIN orders AS o
+    ON c.customer_id = o.customer_id
+WHERE o.order_id IS NULL;
+
+-- Check: 2 rows, PARIS and FISSA.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -101,3 +116,5 @@ ORDER BY od.quantity DESC;
 -- Start with the table that matches the required output grain.
 -- Join only tables needed for selected columns, filters or relationships.
 -- INNER JOIN finds matches; LEFT JOIN promises to keep the left table.
+-- "All X, even without Y" = X LEFT JOIN Y.
+-- "X with no Y" = LEFT JOIN Y, then WHERE y.primary_key IS NULL.
