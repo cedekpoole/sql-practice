@@ -72,6 +72,24 @@ ORDER BY od.product_id;
 -- Check: 3 rows, for product_id 11, 42 and 72.
 -- Both tables contain order_id, so qualify it with the table alias.
 
+-- Pattern: add product names to order lines
+-- Output grain: one row per product line for order 10248.
+-- Start with order_details because it already has the order filter and quantity.
+-- Joining to products is many-to-one, so 3 order lines stay 3 rows.
+SELECT
+    od.order_id,
+    p.product_id,
+    p.product_name,
+    od.quantity
+FROM order_details AS od
+JOIN products AS p
+    ON p.product_id = od.product_id
+WHERE od.order_id = 10248
+ORDER BY od.quantity DESC;
+
+-- Check: Queso Cabrales = 12, Singaporean Hokkien Fried Mee = 10,
+-- Mozzarella di Giovanni = 5.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -80,3 +98,6 @@ ORDER BY od.product_id;
 -- customers -> orders is one-to-many.
 -- Clause pattern: FROM -> JOIN -> ON -> WHERE.
 -- If both tables share a column name, qualify it: o.order_id.
+-- Start with the table that matches the required output grain.
+-- Join only tables needed for selected columns, filters or relationships.
+-- INNER JOIN finds matches; LEFT JOIN promises to keep the left table.
