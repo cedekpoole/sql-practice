@@ -90,6 +90,25 @@ ORDER BY od.quantity DESC;
 -- Check: Queso Cabrales = 12, Singaporean Hokkien Fried Mee = 10,
 -- Mozzarella di Giovanni = 5.
 
+-- Pattern: follow a relationship through three tables
+-- Show the date, product name and quantity for each line on order 10248.
+-- Output grain: one row per product line on the order.
+-- Each order_details row matches one order and one product, so neither join
+-- multiplies the starting rows.
+SELECT
+    p.product_name,
+    o.order_date,
+    od.quantity
+FROM order_details AS od
+JOIN orders AS o
+    ON o.order_id = od.order_id
+JOIN products AS p
+    ON p.product_id = od.product_id
+WHERE od.order_id = 10248
+ORDER BY od.quantity DESC;
+
+-- Check: 3 rows dated 1996-07-04, with quantities 12, 10 and 5.
+
 -- Pattern: find rows with no match (anti-join)
 -- Find customers who have never placed an order.
 -- Output grain: one row per customer with no orders.
@@ -129,5 +148,8 @@ WHERE o.order_id IS NULL;
 -- Start with the table that matches the required output grain.
 -- Join only tables needed for selected columns, filters or relationships.
 -- INNER JOIN finds matches; LEFT JOIN promises to keep the left table.
+-- With INNER JOIN, written table order usually does not change the matches.
+-- Logical order: FROM/JOIN -> WHERE -> GROUP BY -> HAVING -> SELECT
+-- -> ORDER BY -> LIMIT. PostgreSQL may optimize the physical order.
 -- "All X, even without Y" = X LEFT JOIN Y.
 -- "X with no Y" = LEFT JOIN Y, then WHERE y.primary_key IS NULL.
