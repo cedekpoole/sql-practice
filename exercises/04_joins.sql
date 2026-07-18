@@ -105,6 +105,19 @@ WHERE o.order_id IS NULL;
 
 -- Check: 2 rows, PARIS and FISSA.
 
+-- Same pattern: employees who have never handled an order.
+SELECT
+    e.employee_id,
+    e.first_name,
+    e.last_name
+FROM employees AS e
+LEFT JOIN orders AS o
+    ON o.employee_id = e.employee_id
+WHERE o.order_id IS NULL;
+
+-- Check: 0 rows. Every employee has handled at least one order.
+-- An empty result can be the correct answer.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
