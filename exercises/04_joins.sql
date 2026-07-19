@@ -181,6 +181,30 @@ ORDER BY order_count, e.last_name;
 -- Validation variation: change the ON date range to >= 1996-07-04 and
 -- < 1996-07-11. All 9 employees remain, 5 have zero and the counts sum to 6.
 
+-- Pattern: join detail rows, then aggregate to the required grain
+-- Show the top 10 customers by net revenue.
+-- order_details holds the revenue inputs; orders links each line to a customer;
+-- customers supplies the company name.
+-- Output grain after grouping: one row per customer.
+SELECT
+    c.customer_id,
+    c.company_name,
+    ROUND(
+        SUM(od.unit_price * od.quantity * (1 - od.discount))::numeric,
+        2
+    ) AS net_revenue
+FROM order_details AS od
+JOIN orders AS o
+    ON od.order_id = o.order_id
+JOIN customers AS c
+    ON o.customer_id = c.customer_id
+GROUP BY c.customer_id
+ORDER BY net_revenue DESC
+LIMIT 10;
+
+-- Check: QUICK = 110277.31, ERNSH = 104874.98, SAVEA = 104361.95.
+-- The joins stay at product-line grain; GROUP BY collapses lines to customers.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -201,3 +225,4 @@ ORDER BY order_count, e.last_name;
 -- COUNT(*) counts rows; COUNT(column) counts non-NULL values.
 -- A right-table filter in ON limits matches and preserves left rows.
 -- The same filter in WHERE can remove NULL rows and undo the LEFT JOIN.
+-- For grouped metrics: join at detail grain, then GROUP BY the required output.
