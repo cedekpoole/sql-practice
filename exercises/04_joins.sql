@@ -177,6 +177,9 @@ ORDER BY order_count, e.last_name;
 -- The counts sum to 408, matching the total number of orders in 1997.
 -- A zero would mean no matching order among current employee records. Proving
 -- historical eligibility would require fields such as created_at or hire_date.
+--
+-- Validation variation: change the ON date range to >= 1996-07-04 and
+-- < 1996-07-11. All 9 employees remain, 5 have zero and the counts sum to 6.
 
 -- Memory hooks
 -- A join adds columns by matching keys.
