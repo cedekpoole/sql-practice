@@ -157,6 +157,27 @@ LIMIT 10;
 -- PostgreSQL allows company_name outside GROUP BY because customer_id is its
 -- primary key and determines the rest of the customer row.
 
+-- Pattern: filter right-table matches while preserving every left row
+-- Show every current employee and their number of orders during 1997.
+-- Put the order-date condition in ON so employees with no 1997 match remain.
+SELECT
+    e.employee_id,
+    e.first_name,
+    e.last_name,
+    COUNT(o.order_id) AS order_count
+FROM employees AS e
+LEFT JOIN orders AS o
+    ON e.employee_id = o.employee_id
+    AND o.order_date >= DATE '1997-01-01'
+    AND o.order_date < DATE '1998-01-01'
+GROUP BY e.employee_id
+ORDER BY order_count, e.last_name;
+
+-- Check: 9 employees. Counts range from Buchanan = 18 to Peacock = 81.
+-- The counts sum to 408, matching the total number of orders in 1997.
+-- A zero would mean no matching order among current employee records. Proving
+-- historical eligibility would require fields such as created_at or hire_date.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -175,3 +196,5 @@ LIMIT 10;
 -- "X with no Y" = LEFT JOIN Y, then WHERE y.primary_key IS NULL.
 -- LEFT JOIN counts including zero = COUNT(right_table.primary_key).
 -- COUNT(*) counts rows; COUNT(column) counts non-NULL values.
+-- A right-table filter in ON limits matches and preserves left rows.
+-- The same filter in WHERE can remove NULL rows and undo the LEFT JOIN.
