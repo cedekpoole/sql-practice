@@ -137,6 +137,26 @@ WHERE o.order_id IS NULL;
 -- Check: 0 rows. Every employee has handled at least one order.
 -- An empty result can be the correct answer.
 
+-- Pattern: count matches while keeping rows with zero matches
+-- Show every customer and their number of orders, including zero.
+-- Output grain after grouping: one row per customer.
+SELECT
+    c.customer_id,
+    c.company_name,
+    COUNT(o.order_id) AS order_count
+FROM customers AS c
+LEFT JOIN orders AS o
+    ON c.customer_id = o.customer_id
+GROUP BY c.customer_id
+ORDER BY order_count, c.customer_id
+LIMIT 10;
+
+-- Check: FISSA = 0, PARIS = 0, CENTC = 1.
+-- COUNT(o.order_id) ignores the NULL placeholder for customers with no orders.
+-- COUNT(*) would incorrectly count that placeholder row as 1.
+-- PostgreSQL allows company_name outside GROUP BY because customer_id is its
+-- primary key and determines the rest of the customer row.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -153,3 +173,5 @@ WHERE o.order_id IS NULL;
 -- -> ORDER BY -> LIMIT. PostgreSQL may optimize the physical order.
 -- "All X, even without Y" = X LEFT JOIN Y.
 -- "X with no Y" = LEFT JOIN Y, then WHERE y.primary_key IS NULL.
+-- LEFT JOIN counts including zero = COUNT(right_table.primary_key).
+-- COUNT(*) counts rows; COUNT(column) counts non-NULL values.
