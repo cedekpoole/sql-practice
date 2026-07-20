@@ -205,6 +205,30 @@ LIMIT 10;
 -- Check: QUICK = 110277.31, ERNSH = 104874.98, SAVEA = 104361.95.
 -- The joins stay at product-line grain; GROUP BY collapses lines to customers.
 
+-- Same pattern through a different relationship: top categories by revenue.
+-- Output grain after grouping: one row per category.
+SELECT
+    c.category_id,
+    c.category_name,
+    ROUND(
+        SUM(od.quantity * od.unit_price * (1 - od.discount))::numeric,
+        2
+    ) AS net_revenue
+FROM order_details AS od
+JOIN products AS p
+    ON od.product_id = p.product_id
+JOIN categories AS c
+    ON p.category_id = c.category_id
+GROUP BY c.category_id
+ORDER BY net_revenue DESC
+LIMIT 5;
+
+-- Check: Beverages = 267868.18, Dairy Products = 234507.28,
+-- Confections = 167357.23.
+-- category_id -> category_name because category_id is the primary key.
+-- category_name -> category_id is not guaranteed, so grouping by name alone
+-- does not allow category_id to be selected.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -226,3 +250,5 @@ LIMIT 10;
 -- A right-table filter in ON limits matches and preserves left rows.
 -- The same filter in WHERE can remove NULL rows and undo the LEFT JOIN.
 -- For grouped metrics: join at detail grain, then GROUP BY the required output.
+-- GROUP BY the columns that identify what one output row represents.
+-- Use a primary key for one row per entity, not for every GROUP BY query.
