@@ -229,6 +229,21 @@ LIMIT 5;
 -- category_name -> category_id is not guaranteed, so grouping by name alone
 -- does not allow category_id to be selected.
 
+-- Pattern: count at the correct grain after a one-to-many join
+-- One order becomes one joined row per product line. Count distinct order IDs
+-- when the metric is orders, not product lines.
+SELECT
+    COUNT(*) AS product_lines,
+    COUNT(o.order_id) AS repeated_order_ids,
+    COUNT(DISTINCT o.order_id) AS distinct_orders,
+    SUM(od.quantity) AS total_units
+FROM orders AS o
+JOIN order_details AS od
+    ON o.order_id = od.order_id
+WHERE o.order_id = 10248;
+
+-- Check: 3 product lines, 3 repeated order IDs, 1 order and 27 units.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -252,3 +267,5 @@ LIMIT 5;
 -- For grouped metrics: join at detail grain, then GROUP BY the required output.
 -- GROUP BY the columns that identify what one output row represents.
 -- Use a primary key for one row per entity, not for every GROUP BY query.
+-- After a one-to-many join, COUNT(parent_id) counts repeated detail rows.
+-- COUNT(DISTINCT parent_id) counts the parent entities.
