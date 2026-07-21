@@ -260,6 +260,31 @@ LIMIT 10;
 -- Check: SAVEA = 31 orders / 116 lines, ERNSH = 30 / 102,
 -- QUICK = 28 / 86.
 
+-- Pattern: do not SUM a parent value after a one-to-many join
+-- freight belongs to one order, but it repeats on every joined product line.
+SELECT
+    o.order_id,
+    o.freight,
+    COUNT(*) AS product_lines,
+    SUM(o.freight) AS inflated_freight
+FROM orders AS o
+JOIN order_details AS od
+    ON o.order_id = od.order_id
+WHERE o.order_id = 10248
+GROUP BY o.order_id;
+
+-- Check: freight 32.38 repeats across 3 lines, producing the wrong sum 97.14.
+
+-- Safe pattern: if the metric lives in orders, aggregate orders directly.
+SELECT
+    o.customer_id,
+    ROUND(SUM(o.freight)::numeric, 2) AS total_freight
+FROM orders AS o
+GROUP BY o.customer_id;
+
+-- SUM(DISTINCT o.freight) is not a safe fix: separate orders may legitimately
+-- have the same freight value and would be collapsed together.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -285,3 +310,5 @@ LIMIT 10;
 -- Use a primary key for one row per entity, not for every GROUP BY query.
 -- After a one-to-many join, COUNT(parent_id) counts repeated detail rows.
 -- COUNT(DISTINCT parent_id) counts the parent entities.
+-- Aggregate a metric at the table grain where that metric naturally lives.
+-- DISTINCT can fix repeated IDs; it is not a general fix for repeated values.
