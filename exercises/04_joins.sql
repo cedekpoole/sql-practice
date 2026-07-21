@@ -278,9 +278,16 @@ GROUP BY o.order_id;
 -- Safe pattern: if the metric lives in orders, aggregate orders directly.
 SELECT
     o.customer_id,
+    c.company_name,
     ROUND(SUM(o.freight)::numeric, 2) AS total_freight
 FROM orders AS o
-GROUP BY o.customer_id;
+JOIN customers AS c
+    ON o.customer_id = c.customer_id
+GROUP BY o.customer_id, c.company_name
+ORDER BY total_freight DESC, o.customer_id
+LIMIT 5;
+
+-- Check: SAVEA = 6683.70, ERNSH = 6205.39, QUICK = 5605.63.
 
 -- SUM(DISTINCT o.freight) is not a safe fix: separate orders may legitimately
 -- have the same freight value and would be collapsed together.
