@@ -244,6 +244,22 @@ WHERE o.order_id = 10248;
 
 -- Check: 3 product lines, 3 repeated order IDs, 1 order and 27 units.
 
+-- Applied pattern: compare order count with product-line count per customer.
+-- customers is not needed because customer_id already exists in orders.
+SELECT
+    o.customer_id,
+    COUNT(DISTINCT o.order_id) AS order_count,
+    COUNT(*) AS product_line_count
+FROM orders AS o
+JOIN order_details AS od
+    ON o.order_id = od.order_id
+GROUP BY o.customer_id
+ORDER BY order_count DESC, o.customer_id
+LIMIT 10;
+
+-- Check: SAVEA = 31 orders / 116 lines, ERNSH = 30 / 102,
+-- QUICK = 28 / 86.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
