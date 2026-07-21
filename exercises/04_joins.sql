@@ -292,6 +292,23 @@ LIMIT 5;
 -- SUM(DISTINCT o.freight) is not a safe fix: separate orders may legitimately
 -- have the same freight value and would be collapsed together.
 
+-- Pattern: self-join when one table contains two roles
+-- employees.reports_to points to the employee_id of that employee's manager.
+-- Output grain: one row per employee.
+SELECT
+    e.employee_id,
+    e.first_name,
+    e.last_name,
+    m.first_name AS manager_first_name,
+    m.last_name AS manager_last_name
+FROM employees AS e
+LEFT JOIN employees AS m
+    ON e.reports_to = m.employee_id
+ORDER BY e.employee_id;
+
+-- Check: Andrew Fuller has no manager; five employees report to Andrew and
+-- three report to Steven Buchanan.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -319,3 +336,4 @@ LIMIT 5;
 -- COUNT(DISTINCT parent_id) counts the parent entities.
 -- Aggregate a metric at the table grain where that metric naturally lives.
 -- DISTINCT can fix repeated IDs; it is not a general fix for repeated values.
+-- A self-join uses separate aliases when one table plays multiple roles.
