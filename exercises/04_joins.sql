@@ -344,6 +344,24 @@ ORDER BY distinct_product_count DESC, c.customer_id;
 -- Check: SAVEA = 43, QUICK = 37, ERNSH = 32.
 -- The second join must also be LEFT JOIN or customers with NULL orders vanish.
 
+-- Retrieval check: distinct customers handled by each employee in a date range.
+SELECT
+    e.employee_id,
+    e.first_name,
+    e.last_name,
+    COUNT(DISTINCT o.customer_id) AS customer_count
+FROM employees AS e
+LEFT JOIN orders AS o
+    ON o.employee_id = e.employee_id
+    AND o.order_date >= DATE '1996-07-04'
+    AND o.order_date < DATE '1996-07-11'
+GROUP BY e.employee_id
+ORDER BY customer_count DESC, e.employee_id;
+
+-- Check: Janet = 2, Margaret = 2, Michael = 1, Steven = 1; others = 0.
+-- COUNT(order_id) happens to match in this short window because no employee
+-- handled multiple orders for the same customer. The metrics remain different.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
