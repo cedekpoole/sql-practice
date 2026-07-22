@@ -309,6 +309,21 @@ ORDER BY e.employee_id;
 -- Check: Andrew Fuller has no manager; five employees report to Andrew and
 -- three report to Steven Buchanan.
 
+-- Applied self-join: count direct reports while keeping employees with zero.
+-- m = each employee as a possible manager; e = employees reporting to m.
+SELECT
+    m.employee_id,
+    m.first_name,
+    m.last_name,
+    COUNT(e.employee_id) AS report_count
+FROM employees AS m
+LEFT JOIN employees AS e
+    ON e.reports_to = m.employee_id
+GROUP BY m.employee_id
+ORDER BY report_count DESC, m.employee_id;
+
+-- Check: Andrew = 5, Steven = 3, all other employees = 0.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -337,3 +352,4 @@ ORDER BY e.employee_id;
 -- Aggregate a metric at the table grain where that metric naturally lives.
 -- DISTINCT can fix repeated IDs; it is not a general fix for repeated values.
 -- A self-join uses separate aliases when one table plays multiple roles.
+-- Read self-join aliases as roles: manager m, reporting employee e.
