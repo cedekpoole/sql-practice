@@ -324,6 +324,26 @@ ORDER BY report_count DESC, m.employee_id;
 
 -- Check: Andrew = 5, Steven = 3, all other employees = 0.
 
+-- Pattern: preserve the left population through a chain of LEFT JOINs
+-- Show each current customer's distinct products ordered during 1997,
+-- including customers with zero.
+SELECT
+    c.customer_id,
+    c.company_name,
+    COUNT(DISTINCT od.product_id) AS distinct_product_count
+FROM customers AS c
+LEFT JOIN orders AS o
+    ON c.customer_id = o.customer_id
+    AND o.order_date >= DATE '1997-01-01'
+    AND o.order_date < DATE '1998-01-01'
+LEFT JOIN order_details AS od
+    ON o.order_id = od.order_id
+GROUP BY c.customer_id
+ORDER BY distinct_product_count DESC, c.customer_id;
+
+-- Check: SAVEA = 43, QUICK = 37, ERNSH = 32.
+-- The second join must also be LEFT JOIN or customers with NULL orders vanish.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -353,3 +373,4 @@ ORDER BY report_count DESC, m.employee_id;
 -- DISTINCT can fix repeated IDs; it is not a general fix for repeated values.
 -- A self-join uses separate aliases when one table plays multiple roles.
 -- Read self-join aliases as roles: manager m, reporting employee e.
+-- To preserve the original left population, keep later joins in that path LEFT.
