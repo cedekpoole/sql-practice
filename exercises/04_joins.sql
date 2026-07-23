@@ -362,6 +362,26 @@ ORDER BY customer_count DESC, e.employee_id;
 -- COUNT(order_id) happens to match in this short window because no employee
 -- handled multiple orders for the same customer. The metrics remain different.
 
+-- Less common: RIGHT JOIN preserves every row from the right table.
+-- orders RIGHT JOIN customers is equivalent to customers LEFT JOIN orders.
+-- Prefer the LEFT JOIN form when it makes the query easier to read.
+
+-- Pattern: FULL OUTER JOIN for unmatched rows on either side
+-- Find customers without orders and orders without customers.
+SELECT
+    c.customer_id,
+    c.company_name,
+    o.order_id
+FROM customers AS c
+FULL OUTER JOIN orders AS o
+    ON c.customer_id = o.customer_id
+WHERE c.customer_id IS NULL
+    OR o.order_id IS NULL
+ORDER BY c.customer_id, o.order_id;
+
+-- Check: FISSA and PARIS have no orders. No orders lack a customer because
+-- the foreign key protects that relationship.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -392,3 +412,4 @@ ORDER BY customer_count DESC, e.employee_id;
 -- A self-join uses separate aliases when one table plays multiple roles.
 -- Read self-join aliases as roles: manager m, reporting employee e.
 -- To preserve the original left population, keep later joins in that path LEFT.
+-- RIGHT JOIN keeps the right; FULL OUTER JOIN keeps both sides.
