@@ -382,6 +382,28 @@ ORDER BY c.customer_id, o.order_id;
 -- Check: FISSA and PARIS have no orders. No orders lack a customer because
 -- the foreign key protects that relationship.
 
+-- Pattern: CROSS JOIN to build every possible combination
+-- Build all employee-shipper pairs, then attach orders from one week.
+SELECT
+    e.employee_id,
+    e.first_name,
+    e.last_name,
+    s.shipper_id,
+    s.company_name AS shipper_name,
+    COUNT(o.order_id) AS order_count
+FROM employees AS e
+CROSS JOIN shippers AS s
+LEFT JOIN orders AS o
+    ON o.employee_id = e.employee_id
+    AND o.ship_via = s.shipper_id
+    AND o.order_date >= DATE '1996-07-04'
+    AND o.order_date < DATE '1996-07-11'
+GROUP BY e.employee_id, s.shipper_id
+ORDER BY e.employee_id, s.shipper_id;
+
+-- Check: 9 employees x 3 shippers = 27 combinations; order counts sum to 6.
+-- CROSS JOIN creates the complete grid; LEFT JOIN attaches actual activity.
+
 -- Memory hooks
 -- A join adds columns by matching keys.
 -- Join type decides what stays.
@@ -413,3 +435,4 @@ ORDER BY c.customer_id, o.order_id;
 -- Read self-join aliases as roles: manager m, reporting employee e.
 -- To preserve the original left population, keep later joins in that path LEFT.
 -- RIGHT JOIN keeps the right; FULL OUTER JOIN keeps both sides.
+-- CROSS JOIN creates every possible pair: left row count x right row count.
