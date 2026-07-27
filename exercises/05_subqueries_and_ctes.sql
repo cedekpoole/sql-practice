@@ -2,7 +2,9 @@
 -- Breaking a calculation into stages.
 
 -- A CTE (common table expression) is a named query result.
--- It exists only while the full query runs.
+-- The query inside AS (...) produces rows.
+-- The outer query can use those rows through the CTE name.
+-- The result is not stored and stops existing at the final semicolon.
 --
 -- Pattern:
 -- WITH result_name AS (
@@ -66,8 +68,43 @@ FROM unit_totals;
 
 -- Check: avg_order_units = 61.83.
 
+-- A subquery is a query inside another query.
+-- A scalar subquery returns one value: one row and one column.
+
+-- Pattern: compare rows with a calculated benchmark
+-- The inner query returns the overall average product price.
+-- The outer query compares each product with that one value.
+SELECT
+    product_id,
+    product_name,
+    unit_price
+FROM products
+WHERE unit_price > (
+    SELECT AVG(unit_price)
+    FROM products
+)
+ORDER BY unit_price DESC;
+
+-- Check: 25 products cost more than the overall average of 28.833896....
+
+-- Pattern: products below the overall average stock level
+SELECT
+    product_id,
+    product_name,
+    units_in_stock
+FROM products
+WHERE units_in_stock < (
+    SELECT AVG(units_in_stock)
+    FROM products
+)
+ORDER BY units_in_stock
+LIMIT 10;
+
+-- LIMIT 10 keeps the CLI preview short.
+-- Remove it when the requested answer must include every matching product.
+
 -- Memory hooks
--- "Average of totals" = calculate each total first, then average.
--- Each query stage can have a different grain.
--- Check the output grain of the CTE before using it.
--- A CTE makes an intermediate result readable; it does not store a table.
+-- A CTE names the middle step so the next query can use its rows.
+-- "Average order value" = make one row per order before taking AVG.
+-- A comparison such as > or < needs one value; a scalar subquery can calculate it.
+-- Benchmark inside the parentheses; test each outer row against it.
