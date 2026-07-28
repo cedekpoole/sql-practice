@@ -103,8 +103,33 @@ LIMIT 10;
 -- LIMIT 10 keeps the CLI preview short.
 -- Remove it when the requested answer must include every matching product.
 
+-- A list subquery returns one column and can return many rows.
+-- IN tests whether an outer value appears anywhere in that list.
+-- Repeated values in the inner result do not duplicate outer rows.
+
+-- Pattern: products supplied by suppliers based in the UK
+-- Inner result: the list of UK supplier IDs.
+-- Outer grain: one row per matching product.
+SELECT
+    product_id,
+    product_name,
+    supplier_id
+FROM products
+WHERE supplier_id IN (
+    SELECT supplier_id
+    FROM suppliers
+    WHERE country = 'UK'
+)
+ORDER BY product_id
+LIMIT 10;
+
+-- Check: 7 products supplied by supplier IDs 1 and 8.
+-- Use a JOIN when columns from suppliers are needed in the result.
+-- Use IN when suppliers are only being used as a membership filter.
+
 -- Memory hooks
 -- A CTE names the middle step so the next query can use its rows.
 -- "Average order value" = make one row per order before taking AVG.
 -- A comparison such as > or < needs one value; a scalar subquery can calculate it.
 -- Benchmark inside the parentheses; test each outer row against it.
+-- IN: build the allowed-value list inside; filter the outer rows with it.
