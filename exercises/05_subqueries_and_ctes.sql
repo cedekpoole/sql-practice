@@ -149,6 +149,29 @@ LIMIT 10;
 
 -- Check: 9 suppliers qualify.
 
+-- NOT EXISTS is true when its subquery finds no matching rows.
+
+-- Pattern: employees with no orders during a date range
+-- Outer grain: one row per employee.
+-- Conditions inside the subquery define which orders count as matches.
+SELECT
+    e.employee_id,
+    e.first_name,
+    e.last_name
+FROM employees AS e
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM orders AS o
+    WHERE o.employee_id = e.employee_id
+      AND o.order_date >= DATE '1996-07-04'
+      AND o.order_date < DATE '1996-07-11'
+)
+ORDER BY e.employee_id;
+
+-- Check: employee IDs 1, 2, 7, 8 and 9 had no orders in the period.
+-- Prefer NOT EXISTS when only unmatched rows are needed.
+-- Use LEFT JOIN when all left rows must remain, including matched rows.
+
 -- Memory hooks
 -- A CTE names the middle step so the next query can use its rows.
 -- "Average order value" = make one row per order before taking AVG.
@@ -156,3 +179,4 @@ LIMIT 10;
 -- Benchmark inside the parentheses; test each outer row against it.
 -- IN: build the allowed-value list inside; filter the outer rows with it.
 -- EXISTS: for this outer row, can the inner query find one match?
+-- NOT EXISTS: keep the outer row only when no match can be found.
