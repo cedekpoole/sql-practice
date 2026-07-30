@@ -127,9 +127,32 @@ LIMIT 10;
 -- Use a JOIN when columns from suppliers are needed in the result.
 -- Use IN when suppliers are only being used as a membership filter.
 
+-- EXISTS is true when its subquery finds at least one row.
+-- A correlated subquery refers to the current row of the outer query.
+-- SELECT 1 is a placeholder because EXISTS only checks whether a row exists.
+
+-- Pattern: suppliers with at least one discontinued product
+-- Outer grain: one row per supplier.
+-- Products provide evidence but are not added to the result.
+SELECT
+    s.supplier_id,
+    s.company_name
+FROM suppliers AS s
+WHERE EXISTS (
+    SELECT 1
+    FROM products AS p
+    WHERE p.supplier_id = s.supplier_id
+      AND p.discontinued = 1
+)
+ORDER BY s.supplier_id
+LIMIT 10;
+
+-- Check: 9 suppliers qualify.
+
 -- Memory hooks
 -- A CTE names the middle step so the next query can use its rows.
 -- "Average order value" = make one row per order before taking AVG.
 -- A comparison such as > or < needs one value; a scalar subquery can calculate it.
 -- Benchmark inside the parentheses; test each outer row against it.
 -- IN: build the allowed-value list inside; filter the outer rows with it.
+-- EXISTS: for this outer row, can the inner query find one match?
