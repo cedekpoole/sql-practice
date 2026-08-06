@@ -172,11 +172,52 @@ ORDER BY e.employee_id;
 -- Prefer NOT EXISTS when only unmatched rows are needed.
 -- Use LEFT JOIN when all left rows must remain, including matched rows.
 
+-- Pattern: compare each row with its own group's benchmark
+-- The inner query refers to p.category_id from the current outer row.
+-- This makes the average change according to the product's category.
+SELECT
+    p.product_id,
+    p.product_name,
+    p.category_id,
+    p.unit_price
+FROM products AS p
+WHERE p.unit_price < (
+    SELECT AVG(p2.unit_price)
+    FROM products AS p2
+    WHERE p2.category_id = p.category_id
+)
+ORDER BY p.unit_price, p.product_id
+LIMIT 10;
+
+-- Check: product 33 is first at 2.50.
+-- Its category average is approximately 28.73.
+-- Without the inner WHERE, every product would use the overall average.
+
+-- Pattern: compare each group's metric with an overall benchmark
+-- WHERE filters individual products before grouping.
+-- HAVING filters categories after their averages have been calculated.
+SELECT
+    category_id,
+    AVG(unit_price) AS category_avg
+FROM products
+GROUP BY category_id
+HAVING AVG(unit_price) > (
+    SELECT AVG(unit_price)
+    FROM products
+)
+ORDER BY category_avg DESC;
+
+-- Check: category IDs 6, 1 and 7 qualify.
+-- PostgreSQL accepts category_avg in ORDER BY, but not in HAVING.
+
 -- Memory hooks
 -- A CTE names the middle step so the next query can use its rows.
 -- "Average order value" = make one row per order before taking AVG.
 -- A comparison such as > or < needs one value; a scalar subquery can calculate it.
 -- Benchmark inside the parentheses; test each outer row against it.
+-- No outer reference = one benchmark for every row.
+-- Outer reference = the benchmark changes with the current outer row.
 -- IN: build the allowed-value list inside; filter the outer rows with it.
 -- EXISTS: for this outer row, can the inner query find one match?
 -- NOT EXISTS: keep the outer row only when no match can be found.
+-- Filter source rows with WHERE; filter calculated groups with HAVING.

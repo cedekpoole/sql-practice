@@ -1,13 +1,44 @@
 # Query Planning
 
-Before writing SQL:
+## Before SQL
+
+Spend a few seconds on three questions:
 
 ```text
-OUTPUT: One row per ___ | return ___ | sort/limit ___
-SCOPE: Records/dates ___ | include zero matches? ___ | ties? ___
-SOURCE: Start at ___ (one row per ___) | connect ___ using ___
-LOGIC: Details, summary, existence, benchmark or multiple stages?
-CHECK: Duplicates, NULLs, zeros or date boundaries?
+One row per what?
+Start from which table?
+What must happen to those rows?
+```
+
+## While Writing
+
+Let each part of the question add to the query:
+
+```text
+Required fields             -> SELECT
+Starting data               -> FROM
+Related fields              -> JOIN
+Source-row conditions       -> WHERE
+One result per X            -> GROUP BY X
+Conditions on group metrics -> HAVING
+Top, highest or lowest      -> ORDER BY, then LIMIT
+```
+
+Reason through the rows in this order:
+
+```text
+FROM/JOIN -> WHERE -> GROUP BY -> HAVING -> SELECT -> ORDER BY -> LIMIT
+```
+
+## After SQL
+
+Check only what could realistically make this answer wrong:
+
+```text
+Did a join multiply rows?
+Am I counting or summing at the intended grain?
+Are NULLs, zero matches or date boundaries relevant?
+Can I verify one result with a smaller query?
 ```
 
 ## Decision Guide
@@ -15,10 +46,11 @@ CHECK: Duplicates, NULLs, zeros or date boundaries?
 ```text
 Matching-row columns       -> JOIN
 Summary per group          -> GROUP BY + aggregate
+Keep unmatched rows        -> LEFT JOIN or NOT EXISTS
 Proof of a match           -> EXISTS or IN
 Calculated comparison      -> scalar subquery
+Changing benchmark         -> correlated subquery
 Calculation using totals   -> another stage, often a CTE
-Keep unmatched rows        -> LEFT JOIN or NOT EXISTS
 ```
 
 ## Northwind Example
@@ -26,9 +58,8 @@ Keep unmatched rows        -> LEFT JOIN or NOT EXISTS
 List suppliers associated with at least one discontinued product:
 
 ```text
-OUTPUT: One row per supplier | supplier_id, company_name
-SCOPE: At least one discontinued product
-SOURCE: suppliers -> products using supplier_id
-LOGIC: Products only prove a match, so use EXISTS
-CHECK: Multiple products must not duplicate suppliers
+One row per supplier.
+Start from suppliers.
+Products only prove a match, so use EXISTS.
+Check that multiple products do not duplicate suppliers.
 ```
